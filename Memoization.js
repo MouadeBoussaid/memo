@@ -28,7 +28,7 @@ class Memoization {
 		if (Math.sign(num) === 1) {
 			this.options.maxCacheSize = num;
 		} else {
-			console.error('>> Error: Must be a positive number'); //eslint-disable-line
+            throw new Error('>> Error: maxCacheSize must be a positive number');
 		}
 	}
 
@@ -40,12 +40,15 @@ class Memoization {
 		if (Math.sign(num) === 1) {
 			this.options.maxAge = num;
 		} else {
-			console.error('>> Error: Must be a positive number'); //eslint-disable-line
+            throw new Error('>> Error: maxAge must be a positive number');
 		}
 	}
 
+    getCache() {
+        return this.cache;
+    }
+
 	clearCache() {
-		// this.weakCache = new WeakMap();
 		this.cache.clear();
 	}
 
@@ -59,11 +62,22 @@ class Memoization {
 		// 		maxAge: this.maxAge ? Date.now() + this.maxAge : Infinity,
 		// 	});
 		// });
+        if (fn(args).then) {
+            fn(args).then((result) => {
 		this.cache.set(args, {
+                    data: result,
+                    maxAge: this.maxAge ? Date.now() + this.maxAge * 1000 : Infinity,
+                });
+                console.log(this.cache.get(args));
+            });
+        } else {
+            console.log(fn, args);
+            this.cache.set(args, {
 			data: fn(args),
-			maxAge: this.maxAge ? Date.now() + this.maxAge : Infinity,
+                maxAge: this.maxAge ? Date.now() + this.maxAge * 1000 : Infinity,
 		});
 	}
+    }
 
 	dataCheckedForAge(fn, args) {
 		let data;
